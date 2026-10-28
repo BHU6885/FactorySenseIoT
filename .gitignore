@@ -1,0 +1,45 @@
+# Python cache files
+
+**pycache**/
+*.py[cod]
+
+# Virtual environments
+
+.venv/
+venv/
+env/
+
+# Environment variables and secrets
+
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local databases
+
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs and temporary files
+
+*.log
+*.tmp
+
+# Editor and operating system files
+
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Dataset files — keep local for now
+
+data/
+
+# Generated model files — review before uploading
+
+models/*.joblib
+models/*.pkl

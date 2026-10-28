@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FactorySenseIoT | Predictive Maintenance</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">F</div>
+            <div>
+                <h2>FactorySense<span>IoT</span></h2>
+                <p>INDUSTRIAL INTELLIGENCE</p>
+            </div>
+        </div>
+
+        <div class="nav-heading">WORKSPACE</div>
+
+        <nav>
+            <a href="#dashboard" class="nav-item active">▦ Dashboard</a>
+            <a href="#photo-readings" class="nav-item">▧ Sensor Photo</a>
+            <a href="#history" class="nav-item">◷ Prediction History</a>
+            <a href="#failure" class="nav-item">◈ Failure Prediction</a>
+            <a href="#rul" class="nav-item">◷ RUL Estimation</a>
+            <a href="#monitoring" class="nav-item">⌁ Sensor Monitoring</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="connection-dot"></div>
+            <div>
+                <strong>System Status</strong>
+                <p id="backend-connection-status">Connecting...</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <p class="breadcrumb">WORKSPACE / OVERVIEW</p>
+                <h1>Predictive Maintenance Dashboard</h1>
+                <p class="subtitle">
+                    Monitor equipment health and estimate maintenance needs.
+                </p>
+            </div>
+
+            <div class="header-status">
+                <span class="live-dot"></span>
+                LOCAL SYSTEM
+            </div>
+        </header>
+
+        <!-- DASHBOARD -->
+        <section id="dashboard">
+
+            <div class="section-heading">
+                <div>
+                    <h2>System Overview</h2>
+                    <p>AI model status and prediction summary</p>
+                </div>
+
+                <span class="badge">ML-POWERED</span>
+            </div>
+
+            <div class="stats-grid">
+
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span>RUL Model</span>
+                        <span class="stat-icon purple">◷</span>
+                    </div>
+                    <h3 id="rul-status">Loading...</h3>
+                    <p>NASA C-MAPSS FD001</p>
+                    <span class="stat-note">Regression model</span>
+                </article>
+
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span>Failure Model</span>
+                        <span class="stat-icon blue">◈</span>
+                    </div>
+                    <h3 id="failure-status">Loading...</h3>
+                    <p>AI4I 2020 dataset</p>
+                    <span class="stat-note">Classification model</span>
+                </article>
+
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span>Latest Failure Risk</span>
+                        <span class="stat-icon orange">!</span>
+                    </div>
+                    <h3 id="risk-summary">Not evaluated</h3>
+                    <p>Based on the latest prediction</p>
+                    <span class="stat-note">Run a prediction below</span>
+                </article>
+
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span>Latest RUL Estimate</span>
+                        <span class="stat-icon green">⌁</span>
+                    </div>
+                    <h3 id="rul-summary">Not evaluated</h3>
+                    <p>Estimated operating cycles</p>
+                    <span class="stat-note">Run an RUL prediction below</span>
+                </article>
+
+            </div>
+
+            <div class="notice">
+                <strong>Important:</strong>
+                This project uses two separate datasets and models.
+                AI4I predicts machine failure; NASA C-MAPSS estimates
+                remaining useful life. They represent different systems
+                and should not be treated as one combined machine model.
+            </div>
+
+        </section>
+
+        <!-- SENSOR PHOTO OCR -->
+        <section id="photo-readings" class="content-section">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Read Sensor Values from a Photo</h2>
+                    <p>OCR-assisted input for one selected prediction model</p>
+                </div>
+                <span class="badge">PHOTO OCR</span>
+            </div>
+
+            <div class="panel">
+                <p class="panel-description">
+                    Upload a clear photo of a sensor display that shows both labels
+                    and readings. Choose one model only. The image is read in your
+                    browser and is not sent to the Flask server. Check every
+                    extracted value before submitting the prediction.
+                </p>
+
+                <div class="form-grid photo-input-grid">
+                    <div class="form-group">
+                        <label for="photo-model">Prediction model</label>
+                        <select id="photo-model">
+                            <option value="failure">AI4I — Failure Prediction</option>
+                            <option value="rul">NASA — RUL Estimation</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sensor-photo">Sensor display photo</label>
+                        <input id="sensor-photo" type="file"
+                               accept="image/png,image/jpeg,image/webp">
+                    </div>
+
+                    <div class="form-group photo-action">
+                        <span class="form-group-label">OCR action</span>
+                        <button id="read-sensor-photo" class="primary-button"
+                                type="button">
+                            Read Photo Values
+                        </button>
+                    </div>
+                </div>
+
+                <img id="sensor-photo-preview" class="photo-preview hidden"
+                     alt="Preview of the selected sensor display photo">
+
+                <p id="photo-ocr-status" class="empty-message" aria-live="polite">
+                    Select a model and a photo to begin.
+                </p>
+
+                <details class="ocr-text-details">
+                    <summary>View text recognized from the photo</summary>
+                    <pre id="photo-ocr-text"></pre>
+                </details>
+
+                <div class="notice">
+                    OCR can mistake digits or labels. Values it cannot confidently
+                    match will stay blank; complete those fields manually. Then
+                    submit the corresponding AI4I or NASA form below. A normal
+                    machine photo without readable sensor values cannot provide
+                    model inputs.
+                </div>
+            </div>
+
+        </section>
+
+        <!-- PREDICTION HISTORY -->
+        <section id="history" class="content-section">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Prediction History</h2>
+                    <p>Saved AI4I failure and NASA RUL predictions</p>
+                </div>
+                <span class="badge">MYSQL</span>
+            </div>
+
+            <div class="panel">
+                <div class="history-toolbar">
+                    <p class="panel-description">
+                        The two prediction models are stored as separate history records.
+                        Machine IDs remain unassigned until the machine registry is added.
+                    </p>
+                    <div class="history-controls">
+                        <label class="sr-only" for="history-type-filter">
+                            Filter prediction history by model
+                        </label>
+                        <select id="history-type-filter">
+                            <option value="">All predictions</option>
+                            <option value="failure">Failure predictions</option>
+                            <option value="rul">RUL predictions</option>
+                        </select>
+                        <button id="refresh-history" class="primary-button" type="button">
+                            Refresh History
+                        </button>
+                    </div>
+                </div>
+
+                <p id="history-message" class="empty-message" aria-live="polite">
+                    Loading prediction history...
+                </p>
+
+                <div class="table-scroll">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Machine</th>
+                                <th>Type</th>
+                                <th>Result</th>
+                                <th>Failure Probability</th>
+                                <th>Predicted RUL</th>
+                                <th>Risk Level</th>
+                                <th>Model</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-rows"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- FAILURE PREDICTION -->
+        <section id="failure" class="content-section">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Machine Failure Prediction</h2>
+                    <p>AI4I 2020 classification model</p>
+                </div>
+                <span class="badge">MODEL 01</span>
+            </div>
+
+            <div class="panel">
+
+                <div class="panel-description">
+                    Enter machine operating conditions to estimate failure risk.
+                    Temperature values use Kelvin.
+                </div>
+
+                <form id="failure-form">
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label for="machine-type">Product Type</label>
+                            <select id="machine-type" required>
+                                <option value="">Select type</option>
+                                <option value="L">L — Low quality</option>
+                                <option value="M" selected>M — Medium quality</option>
+                                <option value="H">H — High quality</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="air-temp">Air Temperature (K)</label>
+                            <input id="air-temp" type="number"
+                                   step="any" value="298.1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="process-temp">Process Temperature (K)</label>
+                            <input id="process-temp" type="number"
+                                   step="any" value="308.6" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="rotational-speed">Rotational Speed (rpm)</label>
+                            <input id="rotational-speed" type="number"
+                                   step="any" value="1500" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="torque">Torque (Nm)</label>
+                            <input id="torque" type="number"
+                                   step="any" value="40" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tool-wear">Tool Wear (minutes)</label>
+                            <input id="tool-wear" type="number"
+                                   min="0" step="any" value="100" required>
+                        </div>
+
+                    </div>
+
+                    <button type="submit" class="primary-button">
+                        Analyze Failure Risk →
+                    </button>
+
+                </form>
+
+                <div id="failure-result" class="result-box hidden"
+                     aria-live="polite"></div>
+
+            </div>
+
+        </section>
+
+        <!-- RUL ESTIMATION -->
+        <section id="rul" class="content-section">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Remaining Useful Life Estimation</h2>
+                    <p>NASA C-MAPSS FD001 regression model</p>
+                </div>
+                <span class="badge">MODEL 02</span>
+            </div>
+
+            <div class="panel">
+
+                <div class="panel-description">
+                    Enter operating settings and sensor values. All 19 features
+                    expected by the trained NASA model are required.
+                </div>
+
+                <form id="rul-form">
+
+                    <h3 class="form-subheading">Operating Settings</h3>
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label for="op1">Operating Setting 1</label>
+                            <input id="op1" type="number"
+                                   step="any" value="0" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="op2">Operating Setting 2</label>
+                            <input id="op2" type="number"
+                                   step="any" value="0" required>
+                        </div>
+
+                    </div>
+
+                    <h3 class="form-subheading">Sensor Readings</h3>
+
+                    <div id="sensor-inputs" class="form-grid"></div>
+
+                    <button type="submit" class="primary-button">
+                        Estimate Remaining Useful Life →
+                    </button>
+
+                </form>
+
+                <div id="rul-result" class="result-box hidden"
+                     aria-live="polite"></div>
+
+            </div>
+
+        </section>
+
+        <!-- SENSOR MONITORING -->
+        <section id="monitoring" class="content-section">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Sensor Monitoring</h2>
+                    <p>Visualize manually entered sensor values</p>
+                </div>
+                <span class="badge">LIVE INPUT</span>
+            </div>
+
+            <div class="panel">
+
+                <p class="panel-description">
+                    This chart updates after an RUL prediction. It displays the
+                    sensor values submitted in that prediction, not a live
+                    hardware feed.
+                </p>
+
+                <div class="chart-container">
+                    <canvas id="sensor-chart"></canvas>
+                </div>
+
+                <p id="chart-message" class="empty-message">
+                    Submit an RUL prediction to display sensor readings.
+                </p>
+
+            </div>
+
+        </section>
+
+        <footer>
+            <p>FactorySenseIoT · Industrial Predictive Maintenance</p>
+            <p>Educational prototype · Software-based ML predictions</p>
+        </footer>
+
+    </main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+    "model_name": "Random Forest Classifier",
+    "dataset": "AI4I 2020 Predictive Maintenance",
+    "target": "Machine failure",
+    "features": [
+        "Type",
+        "Air temperature [K]",
+        "Process temperature [K]",
+        "Rotational speed [rpm]",
+        "Torque [Nm]",
+        "Tool wear [min]"
+    ],
+    "categorical_features": [
+        "Type"
+    ],
+    "numerical_features": [
+        "Air temperature [K]",
+        "Process temperature [K]",
+        "Rotational speed [rpm]",
+        "Torque [Nm]",
+        "Tool wear [min]"
+    ],
+    "accuracy": 0.979,
+    "roc_auc": 0.9720991657532578,
+    "random_state": 42,
+    "test_size": 0.2
+}
